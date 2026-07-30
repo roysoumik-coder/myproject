@@ -1,4 +1,14 @@
-name: Deploy student management system
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          set -x
+          mkdir -p ~/.ssh
+          touch ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hostsname: Deploy student management system
 
 on:
   push:
