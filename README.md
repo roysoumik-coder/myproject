@@ -77,3 +77,4 @@ Optional:
 - The app stores demo records in `data/students.json` on the server.
 - GitHub Actions runs syntax checks and tests before deployment.
 - CodeQL runs separately for JavaScript security scanning.
+# test deployment
