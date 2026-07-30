@@ -78,3 +78,4 @@ Optional:
 - GitHub Actions runs syntax checks and tests before deployment.
 - CodeQL runs separately for JavaScript security scanning.
 # test deployment
+# redeploy
