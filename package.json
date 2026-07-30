@@ -1,0 +1,20 @@
+{
+  "name": "student-management-system",
+  "version": "1.0.0",
+  "description": "No-Docker student management system with GitHub Actions and AWS EC2 deployment guide.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "check": "node --check index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "devsecops",
+    "student-management",
+    "github-actions",
+    "aws",
+    "ngrok"
+  ],
+  "author": "",
+  "license": "ISC"
+}

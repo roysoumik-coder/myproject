@@ -1,0 +1,82 @@
+name: Deploy student management system
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: student-management-production
+  cancel-in-progress: true
+
+env:
+  APP_NAME: student-management-system
+  APP_DIR: /opt/student-management-system
+  # Node listens privately on localhost:3000. Nginx exposes the app on ports 80/443.
+  APP_PORT: 3000
+
+jobs:
+  deploy:
+    name: Test and deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Verify application
+        run: |
+          npm ci
+          npm run check
+          npm test
+
+      - name: Validate required secrets
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          test -n "$EC2_HOST"
+          test -n "$EC2_USER"
+          test -n "$SSH_PRIVATE_KEY"
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          install -m 600 /dev/null ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Sync project files
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$EC2_USER@$EC2_HOST" "sudo mkdir -p '$APP_DIR' && sudo chown '$EC2_USER:$EC2_USER' '$APP_DIR'"
+
+          rsync -az --delete \
+            --exclude ".git" \
+            --exclude "node_modules" \
+            --exclude "data" \
+            --exclude "tmp" \
+            --exclude "output" \
+            -e "ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes" \
+            ./ "$EC2_USER@$EC2_HOST:$APP_DIR/"
+
+      - name: Install and restart service
+        env:
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes "$EC2_USER@$EC2_HOST" \
+            "APP_DIR='$APP_DIR' APP_NAME='$APP_NAME' APP_PORT='$APP_PORT' bash '$APP_DIR/scripts/restart_on_ec2.sh'"
