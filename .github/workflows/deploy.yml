@@ -13,7 +13,6 @@ concurrency:
 env:
   APP_NAME: student-management-system
   APP_DIR: /home/ubuntu/myproject
-  # Node listens privately on localhost:3000. Nginx exposes the app on ports 80/443.
   APP_PORT: 3000
 
 jobs:
@@ -23,10 +22,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
@@ -92,7 +91,7 @@ jobs:
             "$EC2_USER@$EC2_HOST" \
             "cd '$APP_DIR' && git pull origin main"
 
-      - name: Restart PM2 app
+      - name: Install dependencies and restart PM2 app
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -102,4 +101,4 @@ jobs:
             -o ConnectTimeout=30 \
             -o IdentitiesOnly=yes \
             "$EC2_USER@$EC2_HOST" \
-            "cd '$APP_DIR' && APP_DIR='$APP_DIR' APP_NAME='$APP_NAME' APP_PORT='$APP_PORT' pm2 restart '$APP_NAME' --update-env"
+            "cd '$APP_DIR' && npm ci --omit=dev && APP_DIR='$APP_DIR' APP_NAME='$APP_NAME' APP_PORT='$APP_PORT' pm2 restart '$APP_NAME' --update-env"
