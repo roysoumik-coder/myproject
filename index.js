@@ -386,7 +386,7 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
     <header>
       <div class="topbar">
         <div class="brand">
-          <strong>Student Management System</strong>
+          <strong>Student Management Portal</strong>
           <span>Secure cloud-based student record management platform.</span>
         </div>
         <div class="health">Live app health: OK</div>
