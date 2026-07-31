@@ -56,14 +56,22 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          mkdir -p "$HOME/.ssh"
-          chmod 700 "$HOME/.ssh"
+          set -x
 
-          printf "%s\n" "$SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/deploy_key"
+          echo "HOME=$HOME"
+          pwd
+          whoami
 
-          chmod 600 "$HOME/.ssh/deploy_key"
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
 
-          ssh-keyscan -H "$EC2_HOST" >> "$HOME/.ssh/known_hosts"
+          printf "%s\n" "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+
+          chmod 600 ~/.ssh/deploy_key
+
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+          ls -la ~/.ssh
 
       - name: Test SSH connection
         shell: bash
