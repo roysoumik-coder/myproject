@@ -144,7 +144,7 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Student Management System - TEST</title>
+    <title>Student Management Portal</title>
     <style>
       :root {
         color-scheme: light;
@@ -154,7 +154,7 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
         --panel: #ffffff;
         --soft: #f4f7fa;
         --navy: #163d59;
-        --teal: #14796f;
+        --teal: #2563eb;
         --amber: #d99a21;
         --red: #b33a3a;
       }
@@ -387,7 +387,7 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
       <div class="topbar">
         <div class="brand">
           <strong>Student Management System</strong>
-          <span>Manage students, courses, years, and enrollment status.</span>
+          <span>Secure cloud-based student record management platform.</span>
         </div>
         <div class="health">Live app health: OK</div>
       </div>
