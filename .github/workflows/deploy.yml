@@ -17,99 +17,102 @@ env:
 
 jobs:
   deploy:
-    name: Test and deploy to EC2
+    name: Test and Deploy to EC2
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Set up Node
+      - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
-      - name: Code test
-        run: |
-          npm ci
-          npm run check
-          npm test
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Validate required secrets
+      - name: Run checks
+        run: npm run check
+
+      - name: Run tests
+        run: npm test
+
+      - name: Validate secrets
+        shell: bash
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          if [ -z "$EC2_HOST" ]; then
-            echo "Missing required GitHub secret: EC2_HOST"
-            exit 1
-          fi
-
-          if [ -z "$EC2_USER" ]; then
-            echo "Missing required GitHub secret: EC2_USER"
-            exit 1
-          fi
-
-          if [ -z "$SSH_PRIVATE_KEY" ]; then
-            echo "Missing required GitHub secret: SSH_PRIVATE_KEY"
-            exit 1
-          fi
+          [ -n "$EC2_HOST" ] || { echo "EC2_HOST missing"; exit 1; }
+          [ -n "$EC2_USER" ] || { echo "EC2_USER missing"; exit 1; }
+          [ -n "$SSH_PRIVATE_KEY" ] || { echo "SSH_PRIVATE_KEY missing"; exit 1; }
 
       - name: Configure SSH
+        shell: bash
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
 
-          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
+          printf "%s\n" "$SSH_PRIVATE_KEY" | tr -d '\r' > "$HOME/.ssh/deploy_key"
 
-          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+          chmod 600 "$HOME/.ssh/deploy_key"
 
-      - name: Test SSH connection to EC2
+          ssh-keyscan -H "$EC2_HOST" >> "$HOME/.ssh/known_hosts"
+
+      - name: Test SSH connection
+        shell: bash
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
         run: |
-          ssh -i ~/.ssh/deploy_key \
+          ssh \
+            -i "$HOME/.ssh/deploy_key" \
             -o BatchMode=yes \
-            -o ConnectTimeout=30 \
             -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=accept-new \
             "$EC2_USER@$EC2_HOST" \
-            "echo 'SSH connection successful' && hostname && whoami"
+            "hostname && whoami"
 
       - name: Deploy application
+        shell: bash
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
+          APP_NAME: ${{ env.APP_NAME }}
+          APP_DIR: ${{ env.APP_DIR }}
+          APP_PORT: ${{ env.APP_PORT }}
         run: |
-          ssh -i ~/.ssh/deploy_key \
+          ssh \
+            -i "$HOME/.ssh/deploy_key" \
             -o BatchMode=yes \
-            -o ConnectTimeout=30 \
             -o IdentitiesOnly=yes \
-            "$EC2_USER@$EC2_HOST" << 'EOF'
+            -o StrictHostKeyChecking=accept-new \
+            "$EC2_USER@$EC2_HOST" << EOF
+
           set -e
 
           export PM2_HOME=/home/ubuntu/.pm2
-          export PATH=$PATH:/usr/bin
+          export PATH=\$PATH:/usr/bin
 
-          cd /home/ubuntu/myproject
+          cd $APP_DIR
 
           git pull origin main
 
           npm ci --omit=dev
 
-          echo "===== PM2 Before Restart ====="
-          pm2 list
-
-          pm2 restart student-management-system --update-env
+          if pm2 describe $APP_NAME >/dev/null 2>&1; then
+            pm2 restart $APP_NAME --update-env
+          else
+            pm2 start npm --name $APP_NAME -- start
+          fi
 
           pm2 save
 
-          echo "===== PM2 After Restart ====="
           pm2 list
           EOF
