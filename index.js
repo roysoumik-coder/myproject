@@ -169,9 +169,9 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
       }
 
       header {
-        background: var(--navy);
-        color: #fff;
-        padding: 24px clamp(18px, 4vw, 44px);
+         background: linear-gradient(135deg, #163d59, #2563eb);
+         color: #fff;
+         padding: 32px clamp(18px, 4vw, 44px);
       }
 
       .topbar {
@@ -215,11 +215,13 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
         margin-bottom: 18px;
       }
 
-      .stat, .form-panel, .table-panel {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-      }
+       .stat, .form-panel, .table-panel {
+       background: white;
+       border: none;
+       border-radius: 16px;
+       box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+   }
+      
 
       .stat {
         padding: 18px;
@@ -270,25 +272,40 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
       input, select {
         width: 100%;
         min-height: 42px;
-        border: 1px solid #c4ced8;
-        border-radius: 6px;
-        padding: 0 11px;
+        border:1px solid #cbd5e1;
+        border-radius:10px;
+       padding:12px;
         font: inherit;
         color: var(--ink);
         background: #fff;
+        transition:.3s;
       }
 
+      input:focus,
+select:focus {
+
+outline:none;
+border-color:#2563eb;
+box-shadow:0 0 0 3px rgba(37,99,235,.15);
+
+}
+
       button {
-        min-height: 42px;
-        border: 0;
-        border-radius: 6px;
-        padding: 0 14px;
-        font: inherit;
-        font-weight: 800;
-        color: #fff;
-        background: var(--teal);
-        cursor: pointer;
+  min-height:42px;
+  border:none;
+  border-radius:10px;
+  padding:0 18px;
+  font-weight:800;
+  color:white;
+  background:linear-gradient(135deg,#2563eb,#14b8a6);
+  cursor:pointer;
+  transition:0.3s;
       }
+
+     button:hover {
+     transform:translateY(-2px);
+      box-shadow:0 8px 15px rgba(37,99,235,.3);
+       }  
 
       .icon-button {
         min-height: 34px;
@@ -328,11 +345,12 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
         overflow-x: auto;
       }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 720px;
-      }
+     tbody tr:hover {
+
+background:#f8fafc;
+transform:scale(1.01);
+
+}
 
       th, td {
         padding: 14px 16px;
@@ -380,6 +398,17 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
           flex-direction: column;
         }
       }
+
+    footer {
+
+text-align:center;
+padding:25px;
+color:#64748b;
+font-size:14px;
+
+}
+
+
     </style>
   </head>
   <body>
@@ -389,14 +418,17 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
           <strong>Student Management Portal</strong>
           <span>Secure cloud-based student record management platform.</span>
         </div>
-        <div class="health">Live app health: OK</div>
+        <div class="health">🟢 System Online</div>
       </div>
     </header>
     <main>
       <section class="stats" aria-label="Student summary">
-        <div class="stat"><span>Total Students</span><strong>${total}</strong></div>
-        <div class="stat"><span>Active Students</span><strong>${active}</strong></div>
-        <div class="stat"><span>Courses</span><strong>${courses}</strong></div>
+        <div class="stat">
+  <span>👨‍🎓 Total Students</span>
+  <strong>${total}</strong>
+</div>
+        <div class="stat"><span>✅ Active Students</span><strong>${active}</strong></div>
+        <div class="stat"><span>📚 Courses</span><strong>${courses}</strong></div>
       </section>
 
       <section class="grid">
@@ -453,6 +485,12 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
         </section>
       </section>
     </main>
+    <footer>
+      <p>
+        Student Management Portal |
+        Powered by Node.js + AWS + GitHub Actions
+      </p>
+    </footer>
   </body>
 </html>`;
 }
