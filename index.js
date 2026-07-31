@@ -148,25 +148,49 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
     <style>
       :root {
         color-scheme: light;
-        --ink: #17212b;
+       --ink: #17212b;
         --muted: #5d6b78;
         --line: #d8e0e8;
+        --background: #eef3f6;
         --panel: #ffffff;
         --soft: #f4f7fa;
         --navy: #163d59;
         --teal: #2563eb;
         --amber: #d99a21;
         --red: #b33a3a;
+
       }
+
+      .dark {
+  --ink: #f8fafc;
+  --muted: #cbd5e1;
+  --panel: #1e293b;
+  --background: #0f172a;
+  --line: #334155;
+}
 
       * { box-sizing: border-box; }
 
       body {
+        animation: fadeIn 0.6s ease-in;
         margin: 0;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        color: var(--ink);
-        background: #eef3f6;
+         color:var(--ink);
+       background:var(--background);
+       transition:0.4s;
       }
+
+      @keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 
       header {
          background: linear-gradient(135deg, #163d59, #2563eb);
@@ -216,12 +240,19 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
       }
 
        .stat, .form-panel, .table-panel {
+       transition: transform 0.3s ease, box-shadow 0.3s ease;
        background: white;
        border: none;
        border-radius: 16px;
        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
    }
       
+   .stat:hover,
+.form-panel:hover,
+.table-panel:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+}
 
       .stat {
         padding: 18px;
@@ -299,12 +330,12 @@ box-shadow:0 0 0 3px rgba(37,99,235,.15);
   color:white;
   background:linear-gradient(135deg,#2563eb,#14b8a6);
   cursor:pointer;
-  transition:0.3s;
+  transition: all 0.3s ease;
       }
 
      button:hover {
-     transform:translateY(-2px);
-      box-shadow:0 8px 15px rgba(37,99,235,.3);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(37,99,235,0.35);
        }  
 
       .icon-button {
@@ -345,10 +376,15 @@ box-shadow:0 0 0 3px rgba(37,99,235,.15);
         overflow-x: auto;
       }
 
+      tbody tr {
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+
      tbody tr:hover {
 
 background:#f8fafc;
-transform:scale(1.01);
+transform: scale(1.01);
 
 }
 
@@ -418,6 +454,9 @@ font-size:14px;
           <strong>Student Management Portal</strong>
           <span>Secure cloud-based student record management platform.</span>
         </div>
+         <button onclick="toggleMode()">
+    🌙 Dark Mode
+  </button>
         <div class="health">🟢 System Online</div>
       </div>
     </header>
@@ -491,6 +530,11 @@ font-size:14px;
         Powered by Node.js + AWS + GitHub Actions
       </p>
     </footer>
+      <script>
+      function toggleMode(){
+        document.body.classList.toggle("dark");
+      }
+    </script>
   </body>
 </html>`;
 }
