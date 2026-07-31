@@ -63,9 +63,12 @@ jobs:
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
           mkdir -p ~/.ssh
-          install -m 600 /dev/null ~/.ssh/deploy_key
+          chmod 700 ~/.ssh
+
           printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
-          ssh-keyscan -T 30 -H "$EC2_HOST" >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key
+
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
       - name: Test SSH connection to EC2
         env:
@@ -77,9 +80,9 @@ jobs:
             -o ConnectTimeout=30 \
             -o IdentitiesOnly=yes \
             "$EC2_USER@$EC2_HOST" \
-            "echo 'SSH connection successful' && pwd"
+            "echo 'SSH connection successful' && hostname && whoami"
 
-      - name: Git pull latest code on EC2
+      - name: Deploy application
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -88,17 +91,25 @@ jobs:
             -o BatchMode=yes \
             -o ConnectTimeout=30 \
             -o IdentitiesOnly=yes \
-            "$EC2_USER@$EC2_HOST" \
-            "cd '$APP_DIR' && git pull origin main"
+            "$EC2_USER@$EC2_HOST" << 'EOF'
+          set -e
 
-      - name: Install dependencies and restart PM2 app
-        env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USER: ${{ secrets.EC2_USER }}
-        run: |
-          ssh -i ~/.ssh/deploy_key \
-            -o BatchMode=yes \
-            -o ConnectTimeout=30 \
-            -o IdentitiesOnly=yes \
-            "$EC2_USER@$EC2_HOST" \
-            "cd '$APP_DIR' && npm ci --omit=dev && APP_DIR='$APP_DIR' APP_NAME='$APP_NAME' APP_PORT='$APP_PORT' pm2 restart '$APP_NAME' --update-env"
+          export PM2_HOME=/home/ubuntu/.pm2
+          export PATH=$PATH:/usr/bin
+
+          cd /home/ubuntu/myproject
+
+          git pull origin main
+
+          npm ci --omit=dev
+
+          echo "===== PM2 Before Restart ====="
+          pm2 list
+
+          pm2 restart student-management-system --update-env
+
+          pm2 save
+
+          echo "===== PM2 After Restart ====="
+          pm2 list
+          EOF
