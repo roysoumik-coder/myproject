@@ -144,7 +144,7 @@ function layout({ students, errors = [], values = {}, notice = '' }) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Student Management System CI/CD</title>
+    <title>Student Management System CD/CI</title>
     <style>
       :root {
         color-scheme: light;
